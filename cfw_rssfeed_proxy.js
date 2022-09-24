@@ -1,48 +1,53 @@
-addEventListener('fetch', function(event) {
+addEventListener('fetch', function (event) {
     event.respondWith(handleRequest(event.request));
 });
+
 async function handleRequest(request) {
-    const origin_base = 'https://feed.oddjobsman.me/programmableweb';
-    const url = new URL(request.url);
-    const {
-        searchParams
-    } = url;
+    const origin_base = 'https://feed.oddjobsman.me/debug';
 
+    const newRequestInit = {
+    };
 
+    const cloudflare_url = new URL(request.url);
     const {
+        searchParams,
         pathname,
         search
-    } = url;
+    } = cloudflare_url;
 
+    // Best practice is to always use the original request to construct the new request
+    // to clone all the attributes. Applying the URL also requires a constructor
+    // since once a Request has been constructed, its URL is immutable.
+    //const newRequest = new Request(new_url.toString(), new Request(request, newRequestInit));
 
-    console.log(pathname);
-    console.log(search);
-    var origin_url = origin_base + "/feed_worker.php";
     if (pathname == '/redirect') {
-        origin_url = origin_base + pathname + search;
-        console.log(origin_url)
-        fetch(origin_url, {
-            headers: {
-                'User-Agent': request.headers.get('user-agent')
-            }
-        });
-        return Response.redirect(searchParams.get('url'), 302);
-    }
-    if (pathname != "/") {
-        origin_url = origin_base + pathname + search;
-        console.log(origin_url)
-        fetch(origin_url, {
-            headers: {
-                'User-Agent': request.headers.get('user-agent')
-            }
-        });
-        origin_url = origin_base + pathname
-    }
-    return fetch(origin_url, {
-        headers: {
-            'User-Agent': request.headers.get('user-agent')
+        var origin_url = origin_base + pathname + search;
+        const newRequest = new Request(origin_url, new Request(request, newRequestInit));
+        try {
+            return await fetch(newRequest);
+        } catch (e) {
+            return new Response(JSON.stringify({ error: e.message }), { status: 500 });
         }
-    });
+    }
+
+    if (pathname != "/") {
+        var origin_url = origin_base + pathname + search;
+        const newRequest = new Request(origin_url, new Request(request, newRequestInit));
+        try {
+            let response = await fetch(newRequest);
+            return response;
+        } catch (e) {
+            return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+        }
+    }
+
+    var origin_url = origin_base + "/feed_worker.php";
+    const newRequest = new Request(origin_url, new Request(request, newRequestInit));
+    try {
+        return await fetch(newRequest);
+    } catch (e) {
+        return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    }
 }
 
 function MethodNotAllowed(request) {

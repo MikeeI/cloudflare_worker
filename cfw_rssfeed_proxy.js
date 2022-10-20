@@ -49,12 +49,3 @@ async function handleRequest(request) {
         return new Response(JSON.stringify({ error: e.message }), { status: 500 });
     }
 }
-
-function MethodNotAllowed(request) {
-    return new Response(`Method ${request.method} not allowed.`, {
-        status: 405,
-        headers: {
-            Allow: 'GET',
-        },
-    });
-}

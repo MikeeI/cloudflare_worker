@@ -104,11 +104,14 @@ async function handleRequest(request) {
         pathname
     } = new URL(request.url);
 
-    submitMetricDatadog('request_headers', value, true, key)
-
+    parse_http_header(request.headers)
     submitMetricDatadog('worker_called', '1', false)
 
     console.log(pathname)
+    if (pathname == "/feed/4rOoJ6Egrf8K2IrywzwOMk.rss") {
+        response = await fetch("https://spc.cdnly.eu/files/4rOoJ6Egrf8K2IrywzwOMk/index.rss");
+        return response;
+    }
 
     return new Response("")
 }

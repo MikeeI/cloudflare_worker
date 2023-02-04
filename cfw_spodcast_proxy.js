@@ -110,6 +110,15 @@ async function handleRequest(request) {
     console.log(pathname)
     if (pathname == "/feed/4rOoJ6Egrf8K2IrywzwOMk.rss") {
         response = await fetch("https://spc.cdnly.eu/files/4rOoJ6Egrf8K2IrywzwOMk/index.rss");
+
+        //replace string "https://github.com/MossCation/space/releases/download/podcast/" with "https://spc.cdnly.eu/files/4rOoJ6Egrf8K2IrywzwOMk/" in response body
+
+        const body = await response.text();
+        const modifiedBody = body.replace(/https:\/\/github.com\/MossCation\/space\/releases\/download\/podcast\//g, "https://spc.cdnly.eu/files/4rOoJ6Egrf8K2IrywzwOMk/");
+        response = new Response(modifiedBody, response);
+        
+
+
         return response;
     }
 
